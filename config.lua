@@ -17,7 +17,7 @@ return {
     meleeDamage = 1.0,
 
     -- Throwable weapon ammo mappings
-    throwableWeaponAmmoTypes = {
+    ThrowableWeaponAmmoTypes = {
         ['weapon_thrown_throwing_knives']   = 'AMMO_THROWING_KNIVES',
         ['weapon_thrown_tomahawk']          = 'AMMO_TOMAHAWK',
         ['weapon_thrown_tomahawk_ancient']  = 'AMMO_TOMAHAWK_ANCIENT',
