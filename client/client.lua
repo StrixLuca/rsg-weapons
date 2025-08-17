@@ -206,16 +206,18 @@ RegisterNetEvent('rsg-weapons:client:repairweapon', function()
     local heldWeapon = Citizen.InvokeNative(0x8425C5F057012DAB, cache.ped)
     local currentSerial = weaponInHands[heldWeapon]
     local hasItem = RSGCore.Functions.HasItem('weapon_repair_kit', 1)
-
     if hasItem and currentSerial and heldWeapon ~= -1569615261 then
         LocalPlayer.state:set("inv_busy", true, true)
+        local repairTime = config and (config.RepairTime or config.repairTime) or 30000
+        TaskStartScenarioInPlace(cache.ped, GetHashKey("WORLD_HUMAN_CROUCH_INSPECT"), 0, true)
         lib.progressBar({
-            duration = config.RepairTime,
+            duration = tonumber(repairTime) or 30000,
             position = 'bottom',
             label = locale('cl_repairing_weapon'),
             canCancel = false,
             disable = { move = true, mouse = true }
         })
+        ClearPedTasks(cache.ped)
         TriggerServerEvent('rsg-weapons:server:removeitem', 'weapon_repair_kit', 1)
         TriggerServerEvent('rsg-weapons:server:repairweapon', currentSerial)
         LocalPlayer.state:set("inv_busy", false, true)
