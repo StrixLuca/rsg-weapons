@@ -1,84 +1,95 @@
 local RSGCore = exports['rsg-core']:GetCoreObject()
 
-lib.locale()
-------------------------------------
--- callback to get weapon info
------------------------------------
+
+------------------------------------------
+-- GET WEAPON INFO
+------------------------------------------
 RSGCore.Functions.CreateCallback('rsg-weapons:server:getweaponinfo', function(source, cb, weaponserial)
--- lib.callback.register('rsg-weapons:server:getweaponinfo', function(source, cb, weaponserial)
-    local weaponinfo = MySQL.query.await('SELECT * FROM player_weapons WHERE serial=@weaponserial', { ['@weaponserial'] = weaponserial })
-    if weaponinfo[1] == nil then return end
+    local weaponinfo = MySQL.query.await(
+        'SELECT * FROM player_weapons WHERE serial = @serial',
+        { ['@serial'] = weaponserial }
+    )
+
+    if not weaponinfo or not weaponinfo[1] then
+        return cb(nil)
+    end
+
     cb(weaponinfo)
 end)
 
------------------------------------
--- Degrade Weapon
------------------------------------
+------------------------------------------
+-- DEGRADE WEAPON
+------------------------------------------
 RegisterNetEvent('rsg-weapons:server:degradeWeapon', function(serie)
+    local config = require 'config'
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
-    local svslot = nil
+    if not Player then return end
+
     for _, v in pairs(Player.PlayerData.items) do
-        if v.type == 'weapon' then
-            if v.info.serie == serie then
-                svslot = v.slot
+        if v.type == 'weapon' and v.info.serie == serie then
+            local newQuality = math.floor((v.info.quality - config.DegradeRate) * 10) / 10
+            v.info.quality = newQuality
 
-                -- weapon quality update
-                local newquality = math.floor((Player.PlayerData.items[svslot].info.quality - Config.DegradeRate) * 10) / 10
-                Player.PlayerData.items[svslot].info.quality = newquality
-
-                if Player.PlayerData.items[svslot].info.quality <= 0 then
-                    print(Player.PlayerData.items[svslot])
-                    TriggerClientEvent('rsg-weapons:client:UseWeapon', src, Player.PlayerData.items[svslot])
-                end
+            if newQuality <= 0 then
+                TriggerClientEvent('rsg-weapons:client:UseWeapon', src, v)
             end
+
+            Player.Functions.SetInventory(Player.PlayerData.items)
+            return -- stop direct zodra gevonden
         end
     end
-    Player.Functions.SetInventory(Player.PlayerData.items)
 end)
 
 ------------------------------------------
--- use weapon repair kit
+-- USEABLE: WEAPON REPAIR KIT
 ------------------------------------------
-RSGCore.Functions.CreateUseableItem('weapon_repair_kit', function(source, item)
+RSGCore.Functions.CreateUseableItem('weapon_repair_kit', function(source)
     TriggerClientEvent('rsg-weapons:client:repairweapon', source)
 end)
 
------------------------------------
--- repair weapon
------------------------------------
+------------------------------------------
+-- REPAIR WEAPON
+------------------------------------------
 RegisterNetEvent('rsg-weapons:server:repairweapon', function(serie)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
-    local svslot = nil
+    if not Player then return end
+
     for _, v in pairs(Player.PlayerData.items) do
-        if v.type == 'weapon' then
-            if v.info.serie == serie then
-                svslot = v.slot
-                Player.PlayerData.items[svslot].info.quality = 100
-            end
+        if v.type == 'weapon' and v.info.serie == serie then
+            v.info.quality = 100
+            Player.Functions.SetInventory(Player.PlayerData.items)
+
+            TriggerClientEvent('ox_lib:notify', src, {
+                title = locale('sv_weapon_repaired'),
+                type = 'success',
+                duration = 5000
+            })
+            return
         end
     end
-    Player.Functions.SetInventory(Player.PlayerData.items)
-    TriggerClientEvent('ox_lib:notify', src, {title = locale('sv_weapon_repaired'), type = 'success', duration = 5000 })
 end)
 
----------------------------------------------
--- remove item
----------------------------------------------
-RegisterServerEvent('rsg-weapons:server:removeitem')
-AddEventHandler('rsg-weapons:server:removeitem', function(item, amount)
+------------------------------------------
+-- REMOVE ITEM FROM PLAYER
+------------------------------------------
+RegisterNetEvent('rsg-weapons:server:removeitem', function(item, amount)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
-    Player.Functions.RemoveItem(item, amount)
-    TriggerClientEvent('rsg-inventory:client:ItemBox', src, RSGCore.Shared.Items[item], 'remove', amount)
+    if not Player then return end
+
+    if Player.Functions.RemoveItem(item, amount) then
+        TriggerClientEvent('rsg-inventory:client:ItemBox', src, RSGCore.Shared.Items[item], 'remove', amount)
+    end
 end)
 
----------------------------------------------
--- Infinityammo for admin
----------------------------------------------
+------------------------------------------
+-- INFINITY AMMO (ADMIN ONLY)
+------------------------------------------
 RegisterNetEvent('rsg-weapons:requestToggle', function()
     local src = source
+
     if RSGCore.Functions.HasPermission(src, 'admin') then
         TriggerClientEvent('rsg-weapons:toggle', src)
     else

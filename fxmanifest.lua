@@ -5,9 +5,10 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 description 'rsg-weapons'
 version '2.1.1'
 
+ox_lib 'locale'
+
 shared_scripts {
     '@ox_lib/init.lua',
-    'config.lua',
 }
 
 client_scripts {
@@ -21,6 +22,7 @@ server_scripts {
 
 files {
     'locales/*.json',
+    "config.lua",
 }
 
 dependencies {
