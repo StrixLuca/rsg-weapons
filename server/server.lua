@@ -28,7 +28,7 @@ RegisterNetEvent('rsg-weapons:server:degradeWeapon', function(serie)
 
     for _, v in pairs(Player.PlayerData.items) do
         if v.type == 'weapon' and v.info.serie == serie then
-            local newQuality = math.floor((v.info.quality - config.DegradeRate) * 10) / 10
+            local newQuality = math.floor((v.info.quality - config.degradeRate) * 10) / 10
             v.info.quality = newQuality
 
             if newQuality <= 0 then
