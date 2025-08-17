@@ -95,7 +95,7 @@ RegisterNetEvent('rsg-weapons:requestToggle', function()
     else
         TriggerClientEvent('ox_lib:notify', src, {
             title = 'Infinity Ammo',
-            description = 'You do not have permission to use this command.',
+            description = locale('sv_requestToggle'),
             type = 'error'
         })
     end
