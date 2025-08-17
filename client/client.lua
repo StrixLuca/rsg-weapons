@@ -34,7 +34,7 @@ exports('CheckWeaponSerial', function()
         end
     end
 
-    if config.Debug then
+    if config.debug then
         print(('^5Weapon Serial^7   : ^2%s^7'):format(tostring(serial)))
         print(('^5Weapon Hash^7     : ^2%s^7'):format(tostring(hash)))
     end
@@ -73,7 +73,7 @@ local function equipWeaponToPed(hash, weaponName)
     GiveWeaponToPed(cache.ped, hash, 0, false, true)
     SetCurrentPedWeapon(cache.ped, hash, true)
     SetAmmoInClip(cache.ped, hash, 0)
-    if config.WeaponComponents then
+    if config.weaponComponents then
         TriggerServerEvent('rsg-weaponcomp:server:check_comps')
     end
 end
@@ -94,7 +94,7 @@ RegisterNetEvent('rsg-weapons:client:UseWeapon', function(weaponData)
         WeaponAPI.RemoveWeaponFromPeds(weaponName, wepSerial)
         UsedWeapons[wepSerial] = nil
         TriggerEvent('rsg-weapons:client:brokenweapon', wepSerial)
-        if config.WeaponComponents then
+        if config.weaponComponents then
             TriggerServerEvent("rsg-weaponcomp:server:removeComponents", "DEFAULT", weaponName, wepSerial)
             TriggerServerEvent('rsg-weaponcomp:server:check_comps')
         end
@@ -191,8 +191,8 @@ CreateThread(function()
                 TriggerServerEvent('rsg-weapons:server:degradeWeapon', weaponInHands[heldWeapon])
             end
         end
-        SetPlayerWeaponDamageModifier(PlayerId(), config.WeaponDmg)
-        SetPlayerMeleeWeaponDamageModifier(PlayerId(), config.MeleeDmg)
+        SetPlayerWeaponDamageModifier(PlayerId(), config.weaponDamage)
+        SetPlayerMeleeWeaponDamageModifier(PlayerId(), config.meleeDamage)
         if IsPlayerFreeAiming(PlayerId()) then
             DisableControlAction(0, 0x8FFC75D6, true)
         end
@@ -208,7 +208,7 @@ RegisterNetEvent('rsg-weapons:client:repairweapon', function()
     local hasItem = RSGCore.Functions.HasItem('weapon_repair_kit', 1)
     if hasItem and currentSerial and heldWeapon ~= -1569615261 then
         LocalPlayer.state:set("inv_busy", true, true)
-        local repairTime = config and (config.RepairTime or config.repairTime) or 30000
+        local repairTime = config and (config.repairTime) or 30000
         TaskStartScenarioInPlace(cache.ped, GetHashKey("WORLD_HUMAN_CROUCH_INSPECT"), 0, true)
         lib.progressBar({
             duration = tonumber(repairTime) or 30000,
@@ -261,7 +261,7 @@ RegisterNetEvent('rsg-weapons:client:repairbrokenweapon', function(serial)
     if hasItem and serial then
         LocalPlayer.state:set("inv_busy", true, true)
         lib.progressBar({
-            duration = config.RepairTime,
+            duration = config.repairTime,
             position = 'bottom',
             label = locale('cl_repairing_weapon'),
             canCancel = false,

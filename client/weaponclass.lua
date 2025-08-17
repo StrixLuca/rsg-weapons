@@ -56,26 +56,26 @@ WeaponAPI.EquipWeapon = function(weaponName, slot, id, hash)
     end
 
     if not ItemdatabaseIsKeyValid(weaponHash, 0) then
-        if config.Debug then print(("Weapon %s not valid"):format(weaponName)) end
+        if config.debug then print(("Weapon %s not valid"):format(weaponName)) end
         return false
     end
 
     local characterItem = getGuidFromItemId(inventoryId, nil, joaat("CHARACTER"), 0xA1212100)
     if not characterItem then
-        if config.Debug then print("No character item found") end
+        if config.debug then print("No character item found") end
         return false
     end
 
     local weaponItem = getGuidFromItemId(inventoryId, characterItem:Buffer(), 923904168, -740156546)
     if not weaponItem then
-        if config.Debug then print("No weapon container item found") end
+        if config.debug then print("No weapon container item found") end
         return false
     end
 
     if slot == 1 then
         if #EquippedWeapons > 0 then
             if not moveInventoryItem(inventoryId, EquippedWeapons[1].guid, weaponItem:Buffer(), 1) then
-                if config.Debug then print("Cannot move item") end
+                if config.debug then print("Cannot move item") end
                 return false
             end
             slotHash = joaat('SLOTID_WEAPON_0')
@@ -88,12 +88,12 @@ WeaponAPI.EquipWeapon = function(weaponName, slot, id, hash)
 
     local itemData = DataView.ArrayBuffer(8 * 13)
     if not InventoryAddItemWithGuid(inventoryId, itemData:Buffer(), weaponItem:Buffer(), weaponHash, slotHash, 1, addReason) then
-        if config.Debug then print("Item not added") end
+        if config.debug then print("Item not added") end
         return false
     end
 
     if not InventoryEquipItemWithGuid(inventoryId, itemData:Buffer(), true) then
-        if config.Debug then print("Unable to equip item") end
+        if config.debug then print("Unable to equip item") end
         return false
     end
 
@@ -144,20 +144,20 @@ WeaponAPI.RemoveWeaponFromPeds = function(weaponName, serial)
 
         local characterItem = getGuidFromItemId(inventoryId, nil, joaat("CHARACTER"), 0xA1212100)
         if not characterItem then
-            if config.Debug then print("Character item not found") end
+            if config.debug then print("Character item not found") end
             return false
         end
 
         local weaponItem = getGuidFromItemId(inventoryId, characterItem:Buffer(), 923904168, -740156546)
         if not weaponItem then
-            if config.Debug then print("Weapon item not found") end
+            if config.debug then print("Weapon item not found") end
             return false
         end
 
         if moveInventoryItem(inventoryId, EquippedWeapons[1].guid, weaponItem:Buffer(), 0) then
             Citizen.InvokeNative(0x12FB95FE3D579238, ped, EquippedWeapons[1].guid, true, 0, false, false)
         else
-            if config.Debug then print("Error moving remaining weapon") end
+            if config.debug then print("Error moving remaining weapon") end
         end
     else
         RemoveWeaponFromPed(ped, weaponHash, true, 0)
